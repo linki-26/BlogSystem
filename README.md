@@ -29,62 +29,6 @@ StudentBlog is a web-based student blogging system developed for the Internet Te
   - Google OAuth for authentication
   - Resend for email notifications
 
-## Project Structure
-
-```text
-Blog_system/
-├── api/
-│   ├── auth.php
-│   ├── categories.php
-│   ├── comments.php
-│   ├── db.example.php
-│   ├── email_logs.php
-│   ├── email_service.php
-│   ├── google_config.example.php
-│   ├── install.php
-│   ├── posts.php
-│   ├── resend_config.example.php
-│   ├── seed_users.php
-│   └── users.php
-├── images/
-├── app.js
-├── cloudinary-config.example.js
-├── dashboard-admin.html
-├── dashboard-moderator.html
-├── dashboard-student.html
-├── database.sql
-├── google-config.example.js
-├── index.html
-├── login.html
-├── post.html
-├── styles.css
-└── README.md
-```
-
-## Files Not Pushed to GitHub
-
-The project uses local configuration files that contain private database credentials and API keys. These files must not be pushed to a public repository:
-
-```text
-api/db.php
-api/google_config.php
-api/resend_config.php
-cloudinary-config.js
-google-config.js
-```
-
-Instead, the repository includes example files:
-
-```text
-api/db.example.php
-api/google_config.example.php
-api/resend_config.example.php
-cloudinary-config.example.js
-google-config.example.js
-```
-
-On a new server, copy each example file, rename it to the real config filename, and add the correct private values.
-
 ## Local Installation
 
 1. Install XAMPP.
@@ -149,60 +93,7 @@ The database can be created in two ways:
 1. Import `database.sql` using phpMyAdmin.
 2. Run `api/install.php` from the browser to create the required tables.
 
-## CRUD Functionality
 
-The project implements CRUD operations for posts:
-
-- Create: registered users can create posts from the student dashboard.
-- Read: guests and users can view approved/public posts.
-- Update: users can edit their own posts.
-- Delete: users can delete their own posts.
-- Search: users can search posts and receive matching results or a clear no-results message.
-
-Comments also support database-connected creation and display.
-
-## User Roles and Permissions
-
-Guest users can:
-
-- View public approved posts
-- Search public posts
-- Register or log in
-
-Registered users can:
-
-- Create posts
-- Edit and delete their own posts
-- Comment on posts
-- Edit their profile
-- Delete their account permanently
-
-Moderators can:
-
-- Review and manage posts depending on moderation permissions
-- Help control inappropriate content
-
-Administrators can:
-
-- Manage users and content
-- View system/admin dashboard information
-- Access email notification logs
-- Perform wider system management actions
-
-Normal users are not allowed to edit or delete posts created by another user.
-
-## Security Implementation
-
-The project includes the following security measures:
-
-- Passwords are stored using hashing.
-- PHP sessions are used for login state.
-- PDO prepared statements are used for database queries.
-- User input is validated before being saved.
-- Incorrect or missing form data returns error messages.
-- Protected actions require authentication.
-- Ownership checks prevent users from editing or deleting other users' records.
-- Private API keys and database credentials are excluded from GitHub.
 
 ## Third-Party API Configuration
 
@@ -341,17 +232,15 @@ After migration, test:
 - Email notifications are sent or logged correctly.
 - Invalid form data produces clear error messages.
 
-## GitHub Push Notes
+## Security Implementation
 
-Push these files:
+The project includes the following security measures:
 
-- Source code files
-- HTML/CSS/JavaScript files
-- PHP API files
-- `database.sql`
-- `README.md`
-- `images/`
-- `.example` configuration files
-- `.gitignore`
-
-Do not push real local configuration files with passwords or API keys.
+- Passwords are stored using hashing.
+- PHP sessions are used for login state.
+- PDO prepared statements are used for database queries.
+- User input is validated before being saved.
+- Incorrect or missing form data returns error messages.
+- Protected actions require authentication.
+- Ownership checks prevent users from editing or deleting other users' records.
+- Private API keys and database credentials are excluded from GitHub.
