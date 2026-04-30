@@ -355,19 +355,3 @@ Push these files:
 - `.gitignore`
 
 Do not push real local configuration files with passwords or API keys.
-
-## Assignment Requirement Coverage
-
-The project covers the LD4 back-end requirements:
-
-- Database connection and table structure
-- Create, read, update, delete operations
-- Search functionality
-- User registration and login
-- Different user roles
-- Profile editing
-- Security validation
-- Error messages for incorrect data
-- Ownership restrictions for editing and deleting
-- Deployment and migration plan
-
