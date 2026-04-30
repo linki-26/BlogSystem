@@ -2,7 +2,7 @@
 // Shared session timeout guard for all JSON API endpoints.
 // A logged-in session expires after this many seconds of inactivity.
 
-define('SESSION_TIMEOUT_SECONDS', 1800); // 30 seconds for testing; use 1800 for 30 minutes.
+define('SESSION_TIMEOUT_SECONDS', 1800); // 30 minutes.
 
 function expireInactiveSession(): void {
     if (empty($_SESSION['user'])) {
