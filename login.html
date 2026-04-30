@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentBlog — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.auth-wrap { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+
+.auth-left { background: #1a1a1a; padding: clamp(2rem,6vw,3.5rem); display: flex; flex-direction: column; justify-content: center; color: #fff; }
+body.dark-mode .auth-left { background: #0d1117; }
+
+.auth-tagline { font-size: clamp(1.5rem,3vw,2.2rem); font-weight: 700; line-height: 1.15; margin-bottom: .65rem; }
+.auth-tagline .accent-txt { color: var(--accent); }
+.auth-sub { color: rgba(255,255,255,.55); max-width: 300px; margin-bottom: 1.5rem; font-size: .86rem; }
+.auth-feature { display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; font-size: .82rem; color: rgba(255,255,255,.6); }
+.auth-feature .icon { color: var(--accent); }
+
+.auth-demo-creds { margin-top: 1.5rem; padding: .85rem .95rem; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: var(--radius-lg); }
+body.dark-mode .auth-demo-creds { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
+.auth-demo-creds h5 { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: rgba(255,255,255,.45); margin-bottom: .55rem; }
+
+.cred-row { display: flex; justify-content: space-between; align-items: center; padding: .32rem 0; border-bottom: 1px solid rgba(255,255,255,.07); gap: .4rem; }
+.cred-row:last-child { border-bottom: none; }
+.cred-role { font-weight: 600; color: #fff; font-size: .8rem; }
+.cred-email { font-family: var(--font-mono); font-size: .67rem; color: rgba(255,255,255,.4); }
+.cred-pass { font-family: var(--font-mono); font-size: .67rem; color: rgba(255,255,255,.65); }
+.quick-fill { font-size: .68rem; padding: .15rem .4rem; border-radius: 4px; background: rgba(37,99,235,.3); border: 1px solid rgba(37,99,235,.45); color: #93c5fd; cursor: pointer; white-space: nowrap; }
+.quick-fill:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.auth-right { padding: clamp(2rem,5vw,3.5rem); display: flex; flex-direction: column; justify-content: center; background: var(--bg); }
+.auth-tabs { display: flex; margin-bottom: 1.25rem; background: var(--surface2); border-radius: var(--radius); padding: .15rem; border: 1px solid var(--border); }
+.auth-tab { flex: 1; padding: .4rem; text-align: center; font-size: .82rem; font-weight: 600; color: var(--ink3); border-radius: calc(var(--radius) - 2px); cursor: pointer; transition: all .14s; }
+.auth-tab.active { background: var(--accent); color: #fff; }
+
+.btn-google { width: 100%; padding: .5rem; border-radius: var(--radius); background: var(--surface2); border: 1px solid var(--border2); color: var(--ink2); font-size: .83rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: .5rem; cursor: pointer; font-family: var(--font-body); }
+.btn-google:hover { border-color: var(--accent); }
+
+.auth-footer-note { margin-top: .9rem; text-align: center; font-size: .78rem; color: var(--ink3); }
+.auth-footer-note a { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .auth-wrap { grid-template-columns: 1fr; }
+  .auth-left { padding: 1.75rem; min-height: auto; }
+  .auth-demo-creds { margin-top: 1rem; }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+<nav class="nav">
+  <a class="nav-brand" href="index.html">StudentBlog</a>
+  <div class="nav-spacer"></div>
+  <a href="index.html" class="btn btn-sm btn-ghost">← Home</a>
+</nav>
+
+<main id="main">
+<div class="auth-wrap">
+
+  <div class="auth-left">
+    <div class="auth-tagline">Write.<br><span class="accent-txt">Share.</span><br>Inspire.</div>
+    <p class="auth-sub">A moderated platform built for students — share ideas, get feedback, and learn from peers.</p>
+    <div class="auth-feature"><span class="icon">✓</span> Free to register and publish</div>
+    <div class="auth-feature"><span class="icon">✓</span> Every post reviewed before going live</div>
+    <div class="auth-feature"><span class="icon">✓</span> Track your post approval status</div>
+    <div class="auth-demo-creds">
+      <h5>Demo Credentials</h5>
+      <div class="cred-row">
+        <div><div class="cred-role">Admin</div><div class="cred-email">admin@vdu.lt</div></div>
+        <div class="cred-pass">admin123</div>
+        <button class="quick-fill" onclick="fillCred('admin@vdu.lt','admin123')">Fill ↗</button>
+      </div>
+      <div class="cred-row">
+        <div><div class="cred-role">Moderator</div><div class="cred-email">mod@vdu.lt</div></div>
+        <div class="cred-pass">mod123</div>
+        <button class="quick-fill" onclick="fillCred('mod@vdu.lt','mod123')">Fill ↗</button>
+      </div>
+      <div class="cred-row">
+        <div><div class="cred-role">Student</div><div class="cred-email">liwin@vdu.lt</div></div>
+        <div class="cred-pass">password</div>
+        <button class="quick-fill" onclick="fillCred('liwin@vdu.lt','password')">Fill ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div style="max-width:320px;width:100%;margin:0 auto;">
+      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1.1rem;">Welcome back</h2>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Log in</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Register</button>
+      </div>
+
+      <div id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="you@vdu.lt" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="loginPass">Password</label>
+          <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter')attemptLogin()">
+        </div>
+        <div class="form-error" id="loginError">Incorrect email or password.</div>
+        <button class="btn btn-primary btn-full" style="margin-top:.35rem;" onclick="attemptLogin()">Log in</button>
+        <div class="divider">or</div>
+        <div id="googleButton" style="display:flex;justify-content:center;"></div>
+        <div class="form-error" id="googleError"></div>
+        <p class="auth-footer-note">No account? <a href="#" onclick="switchAuthTab('register');return false;">Register</a></p>
+      </div>
+
+      <div id="registerForm" style="display:none;">
+        <div class="form-group">
+          <label for="regName">Username</label>
+          <input type="text" id="regName" placeholder="your_name" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" placeholder="you@vdu.lt" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="regPass">Password</label>
+          <input type="password" id="regPass" placeholder="Min. 6 characters" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="regPass2">Confirm password</label>
+          <input type="password" id="regPass2" placeholder="••••••••" autocomplete="new-password"
+                 onkeydown="if(event.key==='Enter')doRegister()">
+        </div>
+        <div class="form-error" id="regError"></div>
+        <button class="btn btn-primary btn-full" style="margin-top:.35rem;" onclick="doRegister()">Create Account</button>
+        <p class="auth-footer-note" style="margin-top:.9rem;">Have an account? <a href="#" onclick="switchAuthTab('login');return false;">Log in</a></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+<script src="google-config.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+redirectIfLoggedIn();
+
+window.onload = initGoogleAuth;
+
+function initGoogleAuth() {
+  const cfg = window.GOOGLE_AUTH_CONFIG || {};
+  const err = document.getElementById('googleError');
+  if (!cfg.clientId || cfg.clientId === 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com') {
+    err.textContent = 'Google OAuth is not configured yet.';
+    err.classList.add('visible');
+    return;
+  }
+  if (!window.google || !google.accounts || !google.accounts.id) {
+    err.textContent = 'Google login script could not be loaded.';
+    err.classList.add('visible');
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: cfg.clientId,
+    callback: handleGoogleCredential,
+  });
+  google.accounts.id.renderButton(document.getElementById('googleButton'), {
+    theme: 'outline',
+    size: 'large',
+    width: 320,
+  });
+}
+
+async function handleGoogleCredential(response) {
+  const err = document.getElementById('googleError');
+  try {
+    const form = new FormData();
+    form.append('action', 'google');
+    form.append('credential', response.credential);
+    const data = await api('api/auth.php', { method: 'POST', body: form });
+    _sessionCache = data.user;
+    err.classList.remove('visible');
+    showToast('Signed in with Google.', 'success');
+    setTimeout(() => redirectByRole(data.user.role), 600);
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('visible');
+  }
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active',    tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('loginError').classList.remove('visible');
+  const re = document.getElementById('regError');
+  if (re) re.classList.remove('visible');
+}
+
+function fillCred(email, pass) {
+  switchAuthTab('login');
+  document.getElementById('loginEmail').value = email;
+  document.getElementById('loginPass').value  = pass;
+}
+
+async function attemptLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginError');
+  if (!email || !pass) { err.textContent = 'Email and password are required.'; err.classList.add('visible'); return; }
+  try {
+    const form = new FormData();
+    form.append('action', 'login');
+    form.append('email', email);
+    form.append('password', pass);
+    const data = await api('api/auth.php', { method: 'POST', body: form });
+    _sessionCache = data.user;
+    err.classList.remove('visible');
+    showToast('Welcome back, ' + data.user.username + '!', 'success');
+    setTimeout(() => redirectByRole(data.user.role), 600);
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('visible');
+  }
+}
+
+async function doRegister() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  const err   = document.getElementById('regError');
+  if (!name || !email || !pass) { err.textContent = 'All fields are required.'; err.classList.add('visible'); return; }
+  if (pass !== pass2) { err.textContent = 'Passwords do not match.'; err.classList.add('visible'); return; }
+  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.classList.add('visible'); return; }
+  try {
+    const form = new FormData();
+    form.append('action', 'register');
+    form.append('username', name);
+    form.append('email', email);
+    form.append('password', pass);
+    form.append('password2', pass2);
+    const data = await api('api/auth.php', { method: 'POST', body: form });
+    _sessionCache = data.user;
+    err.classList.remove('visible');
+    showToast('Account created!', 'success');
+    setTimeout(() => redirectByRole(data.user.role), 600);
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('visible');
+  }
+}
+</script>
+</body>
+</html>

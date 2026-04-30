@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentBlog — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<nav class="nav" id="mainNav">
+  <a class="nav-brand" href="index.html">StudentBlog</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+  </ul>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions" id="navActions"></div>
+  <button id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">☰</button>
+</nav>
+
+<main id="main">
+<div class="dash-layout">
+
+  <aside class="dash-sidebar" aria-label="Admin navigation">
+    <div class="dash-profile">
+      <div class="avatar-lg" id="sidebarAvatar">A</div>
+      <div class="profile-info">
+        <div class="name" id="sidebarName">Admin</div>
+        <div class="role"><span class="badge badge-admin">admin</span></div>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <div class="section-label">Overview</div>
+      <a href="#" id="nav-overview" class="active" onclick="switchTab('overview');return false;">📊 Dashboard</a>
+      <div class="section-label">Content</div>
+      <a href="#" id="nav-allposts" onclick="switchTab('allposts');return false;">📄 All Posts</a>
+      <a href="#" id="nav-modqueue" onclick="switchTab('modqueue');return false;">🕐 Mod Queue <span id="queueBadge" style="margin-left:auto;background:var(--amber-bg);color:var(--amber);font-size:.6rem;padding:.05rem .3rem;border-radius:4px;"></span></a>
+      <a href="#" id="nav-categories" onclick="switchTab('categories');return false;">🏷 Categories</a>
+      <div class="section-label">Users</div>
+      <a href="#" id="nav-users" onclick="switchTab('users');return false;">👥 Manage Users</a>
+      <a href="#" id="nav-settings" onclick="switchTab('settings');return false;">⚙️ Settings</a>
+      <a href="index.html" onclick="logout();return false;" style="margin-top:auto;color:var(--red);">🚪 Log out</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+
+    <!-- OVERVIEW -->
+    <div id="tab-overview" class="tab-content active">
+      <h2 class="section-title">Admin <span class="accent">Dashboard</span></h2>
+      <div class="stat-grid">
+        <div class="stat-card users"><div class="stat-num" id="ovUsers">3</div><div class="stat-lbl">Total Users</div></div>
+        <div class="stat-card total"><div class="stat-num" id="ovPosts">9</div><div class="stat-lbl">Total Posts</div></div>
+        <div class="stat-card approved"><div class="stat-num" id="ovApproved">6</div><div class="stat-lbl">Approved</div></div>
+        <div class="stat-card pending"><div class="stat-num" id="ovPending">2</div><div class="stat-lbl">Pending</div></div>
+        <div class="stat-card rejected"><div class="stat-num" id="ovRejected">1</div><div class="stat-lbl">Rejected</div></div>
+      </div>
+
+      <h3 style="font-size:.85rem;font-weight:600;margin-bottom:.6rem;color:var(--ink2);">Users by Role</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin-bottom:1.5rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--accent);" id="ovStudents">1</div>
+          <div style="font-size:.68rem;color:var(--ink3);font-weight:600;">Students</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--green);" id="ovModerators">1</div>
+          <div style="font-size:.68rem;color:var(--ink3);font-weight:600;">Moderators</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--amber);" id="ovAdmins">1</div>
+          <div style="font-size:.68rem;color:var(--ink3);font-weight:600;">Admins</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--amber);" id="ovNeedsReview">2</div>
+          <div style="font-size:.68rem;color:var(--ink3);font-weight:600;">Pending</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:.85rem;font-weight:600;margin-bottom:.6rem;color:var(--ink2);">Recent Activity</h3>
+      <div style="display:flex;flex-direction:column;gap:.4rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:.82rem;">
+          <span style="color:var(--green);">✓</span>
+          <span>Post <strong>"Introduction to quantum computing"</strong> submitted for review</span>
+          <span style="margin-left:auto;font-size:.71rem;color:var(--ink3);">Mar 13</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:.82rem;">
+          <span style="color:var(--red);">✕</span>
+          <span>Post <strong>"My experience with open source"</strong> rejected</span>
+          <span style="margin-left:auto;font-size:.71rem;color:var(--ink3);">Mar 8</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:.82rem;">
+          <span style="color:var(--accent);">👤</span>
+          <span>New user <strong>Liwin</strong> registered</span>
+          <span style="margin-left:auto;font-size:.71rem;color:var(--ink3);">Feb 2026</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL POSTS -->
+    <div id="tab-allposts" class="tab-content">
+      <h2 class="section-title">All <span class="accent">Posts</span></h2>
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
+        <table class="data-table">
+          <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="allPostsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MOD QUEUE -->
+    <div id="tab-modqueue" class="tab-content">
+      <h2 class="section-title">Moderation <span class="accent">Queue</span></h2>
+      <p style="color:var(--ink3);font-size:.82rem;margin-bottom:1rem;" id="adminQueueSubtitle"></p>
+      <div id="adminModQueue"></div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div id="tab-categories" class="tab-content">
+      <h2 class="section-title">Manage <span class="accent">Categories</span></h2>
+      <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <input type="text" id="newCatInput" placeholder="New category name…"
+               style="padding:.45rem .75rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);color:var(--ink);font-family:var(--font-body);font-size:.83rem;outline:none;flex:1;min-width:150px;"
+               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+        <button class="btn btn-primary btn-sm" onclick="addCategory()">+ Add</button>
+      </div>
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Category</th><th>Posts</th><th>Actions</th></tr></thead>
+          <tbody id="catBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div id="tab-users" class="tab-content">
+      <h2 class="section-title">Manage <span class="accent">Users</span></h2>
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="tab-content">
+      <h2 class="section-title">Platform <span class="accent">Settings</span></h2>
+      <div style="max-width:400px;">
+        <div class="form-group"><label>Platform Name</label><input type="text" value="StudentBlog"></div>
+        <div class="form-group"><label>Contact Email</label><input type="email" value="admin@vdu.lt"></div>
+        <div class="form-group">
+          <label>Moderation Mode</label>
+          <select><option>All posts require approval</option><option>Trusted users auto-approved</option></select>
+        </div>
+        <button class="btn btn-primary" onclick="showToast('Settings saved!','success')">Save Settings</button>
+      </div>
+      <h2 class="section-title" style="margin-top:1.5rem;">Email <span class="accent">Logs</span></h2>
+      <p style="color:var(--ink3);font-size:.82rem;margin-bottom:1rem;">Resend email notification attempts are stored here.</p>
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
+        <table class="data-table">
+          <thead><tr><th>Recipient</th><th>Subject</th><th>Status</th><th>Message</th><th>Date</th></tr></thead>
+          <tbody id="emailLogsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</main>
+
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <h3>Reject Post</h3>
+    <p class="sub">Provide a reason so the student knows what to improve.</p>
+    <div class="form-group">
+      <label for="rejectReason">Rejection reason *</label>
+      <textarea id="rejectReason" rows="4" placeholder="e.g., Post is too short and lacks references…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('rejectModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmReject()">Send Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEACTIVATE MODAL -->
+<div class="modal-overlay" id="deactivateModal">
+  <div class="modal">
+    <h3>Confirm Action</h3>
+    <p class="sub" id="deactivateMsg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('deactivateModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeactivate()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT POST MODAL -->
+<div class="modal-overlay" id="editPostModal">
+  <div class="modal" style="max-width:480px;">
+    <h3>Edit Post</h3>
+    <div class="form-group" style="margin-top:.65rem;">
+      <label for="editPostTitle">Title</label>
+      <input type="text" id="editPostTitle">
+    </div>
+    <div class="form-group">
+      <label for="editPostCat">Category</label>
+      <select id="editPostCat">
+        <option>Technology</option><option>Science</option><option>Arts</option>
+        <option>Engineering</option><option>Health</option><option>Mathematics</option><option>Education</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="editPostExcerpt">Excerpt</label>
+      <textarea id="editPostExcerpt" rows="3"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('editPostModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEditPost()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+<script>
+let currentUser = null;
+let localPosts = [];
+let localUsers = [];
+let categories = [];
+let emailLogs = [];
+let rejectTargetId   = null;
+let deactivateUserId = null;
+let editPostId       = null;
+
+async function initAdminDashboard() {
+  currentUser = await requireAuth(['admin']);
+  if (!currentUser) return;
+  const initials = currentUser.username.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('sidebarAvatar').textContent = initials;
+  document.getElementById('sidebarName').textContent   = currentUser.username;
+  await reloadAdminData();
+}
+
+async function reloadAdminData() {
+  const [postsData, usersData, categoriesData, emailLogsData] = await Promise.all([
+    api('api/posts.php?action=all'),
+    api('api/users.php?action=list'),
+    api('api/categories.php'),
+    api('api/email_logs.php'),
+  ]);
+  localPosts = (postsData.posts || []).map(normalizePost);
+  localUsers = (usersData.users || []).map(u => ({
+    ...u,
+    active: Boolean(Number(u.is_active)),
+    joined: formatDate(u.created_at),
+  }));
+  categories = categoriesData.categories || [];
+  emailLogs = emailLogsData.logs || [];
+  updateOverviewStats();
+  renderAllPosts();
+  renderAdminQueue();
+  renderCategories();
+  renderUsers();
+  renderEmailLogs();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  const navEl = document.getElementById('nav-' + tab);
+  if (navEl) navEl.classList.add('active');
+  if (tab === 'users')      renderUsers();
+  if (tab === 'allposts')   renderAllPosts();
+  if (tab === 'modqueue')   renderAdminQueue();
+  if (tab === 'categories') renderCategories();
+  if (tab === 'settings')   renderEmailLogs();
+  updateOverviewStats();
+}
+
+function updateOverviewStats() {
+  const pend = localPosts.filter(p => p.status === 'pending').length;
+  document.getElementById('ovUsers').textContent     = localUsers.length;
+  document.getElementById('ovPosts').textContent     = localPosts.length;
+  document.getElementById('ovApproved').textContent  = localPosts.filter(p => p.status === 'approved').length;
+  document.getElementById('ovPending').textContent   = pend;
+  document.getElementById('ovRejected').textContent  = localPosts.filter(p => p.status === 'rejected').length;
+  document.getElementById('ovStudents').textContent   = localUsers.filter(u => u.role === 'student').length;
+  document.getElementById('ovModerators').textContent = localUsers.filter(u => u.role === 'moderator').length;
+  document.getElementById('ovAdmins').textContent     = localUsers.filter(u => u.role === 'admin').length;
+  document.getElementById('ovNeedsReview').textContent = pend;
+  const qb = document.getElementById('queueBadge');
+  if (qb) qb.textContent = pend || '';
+}
+
+function renderAllPosts() {
+  document.getElementById('allPostsBody').innerHTML = localPosts.map(p => `
+    <tr>
+      <td>${p.title}</td>
+      <td style="color:var(--ink3);">${p.author}</td>
+      <td><span class="badge ${getCatBadge(p.cat)}">${p.cat}</span></td>
+      <td><span class="badge badge-${p.status}">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span></td>
+      <td style="color:var(--ink3);">${p.date}</td>
+      <td><div style="display:flex;gap:.3rem;">
+        <button class="btn btn-ghost btn-sm" onclick="openEditPost(${p.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePost(${p.id})">Delete</button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+function openEditPost(id) {
+  const p = localPosts.find(p => p.id === id);
+  if (!p) return;
+  editPostId = id;
+  document.getElementById('editPostTitle').value   = p.title;
+  document.getElementById('editPostCat').value     = p.cat;
+  document.getElementById('editPostExcerpt').value = p.excerpt;
+  document.getElementById('editPostModal').classList.add('open');
+}
+
+async function saveEditPost() {
+  const p = localPosts.find(p => p.id === editPostId);
+  if (!p) return;
+  try {
+    const body = new URLSearchParams({
+      id: editPostId,
+      title: document.getElementById('editPostTitle').value.trim() || p.title,
+      category: document.getElementById('editPostCat').value,
+      content: document.getElementById('editPostExcerpt').value.trim() || p.content || p.excerpt,
+    });
+    await api('api/posts.php', { method: 'PUT', body });
+    closeModal('editPostModal');
+    showToast('Post updated.', 'success');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function deletePost(id) {
+  if (!confirm('Delete this post?')) return;
+  try {
+    await api('api/posts.php?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    showToast('Post deleted.', 'error');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderAdminQueue() {
+  const pending = localPosts.filter(p => p.status === 'pending');
+  document.getElementById('adminQueueSubtitle').textContent =
+    pending.length ? pending.length + ' post' + (pending.length > 1 ? 's' : '') + ' awaiting review.' : 'No posts pending.';
+  const container = document.getElementById('adminModQueue');
+  if (!pending.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>All posts reviewed!</p></div>';
+    return;
+  }
+  container.innerHTML = pending.map(p => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:.6rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem;">
+        <div>
+          <h3 style="font-size:.92rem;">${p.title}</h3>
+          <p style="font-size:.74rem;color:var(--ink3);margin-top:.1rem;">By ${p.author} · ${p.cat} · ${p.date}</p>
+        </div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <p style="font-size:.82rem;color:var(--ink2);margin-bottom:.65rem;">${p.excerpt}</p>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="btn btn-success btn-sm" onclick="adminApprove(${p.id})">✓ Approve</button>
+        <button class="btn btn-danger btn-sm" onclick="openRejectModal(${p.id})">✕ Reject</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function adminApprove(id) {
+  try {
+    const form = new FormData();
+    form.append('id', id);
+    await api('api/posts.php?action=approve', { method: 'POST', body: form });
+    showToast('Post approved and published!', 'success');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function openRejectModal(id) {
+  rejectTargetId = id;
+  document.getElementById('rejectReason').value = '';
+  document.getElementById('rejectModal').classList.add('open');
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('rejectReason').value.trim();
+  if (!reason) { showToast('Please provide a rejection reason.', 'error'); return; }
+  try {
+    const form = new FormData();
+    form.append('id', rejectTargetId);
+    form.append('rejection_note', reason);
+    await api('api/posts.php?action=reject', { method: 'POST', body: form });
+    closeModal('rejectModal');
+    showToast('Post rejected.', 'error');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderCategories() {
+  document.getElementById('catBody').innerHTML = categories.map((c, i) => `
+    <tr>
+      <td style="color:var(--ink3);">${c.id}</td>
+      <td><span class="badge ${getCatBadge(c.name)}">${c.name}</span></td>
+      <td style="color:var(--ink3);">${c.post_count}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.id})">Delete</button></td>
+    </tr>
+  `).join('');
+}
+
+async function addCategory() {
+  const input = document.getElementById('newCatInput');
+  const name  = input.value.trim();
+  if (!name) { showToast('Enter a category name.', 'error'); return; }
+  try {
+    const form = new FormData();
+    form.append('name', name);
+    await api('api/categories.php?action=create', { method: 'POST', body: form });
+    input.value = '';
+    showToast('"' + name + '" added!', 'success');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function deleteCategory(id) {
+  if (!confirm('Delete this category?')) return;
+  try {
+    await api('api/categories.php?action=delete&id=' + encodeURIComponent(id), { method: 'DELETE' });
+    showToast('Category deleted.', 'error');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderUsers() {
+  document.getElementById('usersBody').innerHTML = localUsers.map(u => `
+    <tr>
+      <td style="color:var(--ink3);">${u.id}</td>
+      <td>${u.username}</td>
+      <td style="color:var(--ink3);font-family:var(--font-mono);font-size:.72rem;">${u.email}</td>
+      <td>
+        <select class="role-select" onchange="changeRole(${u.id}, this.value)" ${u.id === 1 ? 'disabled' : ''}>
+          <option value="student"   ${u.role === 'student'   ? 'selected' : ''}>Student</option>
+          <option value="moderator" ${u.role === 'moderator' ? 'selected' : ''}>Moderator</option>
+          <option value="admin"     ${u.role === 'admin'     ? 'selected' : ''}>Admin</option>
+        </select>
+      </td>
+      <td style="color:var(--ink3);">${u.joined}</td>
+      <td><span class="badge ${u.active ? 'badge-approved' : 'badge-rejected'}">${u.active ? 'Active' : 'Inactive'}</span></td>
+      <td>
+        ${u.id !== 1
+          ? `<button class="btn btn-${u.active ? 'danger' : 'success'} btn-sm" onclick="openDeactivate(${u.id})">${u.active ? 'Deactivate' : 'Activate'}</button>`
+          : '<span style="font-size:.72rem;color:var(--ink3);">Protected</span>'}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderEmailLogs() {
+  const body = document.getElementById('emailLogsBody');
+  if (!body) return;
+  body.innerHTML = emailLogs.length ? emailLogs.map(log => `
+    <tr>
+      <td style="color:var(--ink3);font-family:var(--font-mono);font-size:.72rem;">${escapeHtml(log.recipient_email)}</td>
+      <td>${escapeHtml(log.subject)}</td>
+      <td><span class="badge badge-${log.status === 'sent' ? 'approved' : log.status === 'skipped' ? 'pending' : 'rejected'}">${escapeHtml(log.status)}</span></td>
+      <td style="color:var(--ink3);font-size:.72rem;">${escapeHtml(log.provider_message || '')}</td>
+      <td style="color:var(--ink3);">${escapeHtml(formatDate(log.created_at))}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:1.25rem;">No email attempts yet.</td></tr>';
+}
+
+async function changeRole(userId, newRole) {
+  try {
+    const form = new FormData();
+    form.append('id', userId);
+    form.append('role', newRole);
+    await api('api/users.php?action=role', { method: 'POST', body: form });
+    showToast('Role updated to ' + newRole + '.', 'success');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+    await reloadAdminData();
+  }
+}
+
+function openDeactivate(userId) {
+  deactivateUserId = userId;
+  const u = localUsers.find(u => u.id === userId);
+  document.getElementById('deactivateMsg').textContent = u && u.active
+    ? 'Deactivate "' + u.username + '"? They will not be able to log in.'
+    : 'Reactivate "' + u.username + '"? They will regain access.';
+  document.getElementById('deactivateModal').classList.add('open');
+}
+
+async function confirmDeactivate() {
+  try {
+    const form = new FormData();
+    form.append('id', deactivateUserId);
+    const data = await api('api/users.php?action=toggle', { method: 'POST', body: form });
+    closeModal('deactivateModal');
+    showToast(data.message, data.active ? 'success' : 'error');
+    await reloadAdminData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.addEventListener('DOMContentLoaded', initAdminDashboard);
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudentBlog - Post</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+<nav class="nav" id="mainNav">
+  <a class="nav-brand" href="index.html">StudentBlog</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+  </ul>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions" id="navActions"></div>
+  <button id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">Menu</button>
+</nav>
+
+<main id="main" class="wrap" style="max-width:760px;">
+  <div id="postContent"></div>
+  <div id="notFound" style="display:none;">
+    <div class="empty-state">
+      <div class="icon">!</div>
+      <p>Post not found.</p>
+      <a href="index.html" class="btn btn-primary" style="margin-top:1rem;">Back to Home</a>
+    </div>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+<script>
+const catImages = {
+  Technology:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+  Science:'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=800&q=80',
+  Arts:'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80',
+  Engineering:'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=800&q=80',
+  Health:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+  Mathematics:'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&q=80',
+  Education:'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80',
+};
+
+function postImage(post) {
+  return post.coverImageUrl || catImages[post.cat] || catImages.Education;
+}
+
+function postImageFrame(post) {
+  return post.coverImageUrl
+    ? 'border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.5rem;background:var(--surface2);border:1px solid var(--border);'
+    : 'aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.5rem;background:var(--surface2);';
+}
+
+function postImageStyle(post) {
+  return post.coverImageUrl
+    ? 'width:100%;height:auto;max-height:75vh;object-fit:contain;display:block;background:var(--surface2);'
+    : 'width:100%;height:100%;object-fit:cover;display:block;';
+}
+
+let currentPostId = null;
+let currentPostUser = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = parseInt(params.get('id'), 10);
+
+  if (!id) {
+    document.getElementById('notFound').style.display = 'block';
+    return;
+  }
+
+  try {
+    currentPostId = id;
+    currentPostUser = await getSession();
+    const data = await api('api/posts.php?action=single&id=' + encodeURIComponent(id));
+    const post = normalizePost(data.post);
+    document.title = post.title + ' - StudentBlog';
+    const body = escapeHtml(post.content || post.excerpt)
+      .split('\n')
+      .filter(Boolean)
+      .map(p => `<p>${p}</p>`)
+      .join('');
+
+    document.getElementById('postContent').innerHTML = `
+      <a href="index.html" style="font-size:.8rem;color:var(--ink3);display:inline-flex;align-items:center;gap:.3rem;margin-bottom:1.2rem;">Back to Posts</a>
+      <div style="${postImageFrame(post)}">
+        <img src="${postImage(post)}" alt="${escapeHtml(post.cat)} cover"
+             style="${postImageStyle(post)}"
+             onerror="this.style.display='none'">
+      </div>
+      <span class="badge ${post.badgeClass}" style="margin-bottom:.75rem;display:inline-block;">${escapeHtml(post.cat)}</span>
+      <h1 style="font-size:clamp(1.4rem,3vw,2rem);line-height:1.25;margin-bottom:.75rem;">${escapeHtml(post.title)}</h1>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
+        <div class="avatar-sm">${escapeHtml((post.author || '?')[0].toUpperCase())}</div>
+        <span style="font-size:.83rem;color:var(--ink2);">${escapeHtml(post.author)}</span>
+        <span style="color:var(--border2);">-</span>
+        <span style="font-size:.83rem;color:var(--ink3);">${escapeHtml(post.date)}</span>
+      </div>
+      <div style="font-size:.95rem;color:var(--ink2);line-height:1.8;">${body}</div>
+      <section style="margin-top:2rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.9rem;">
+          <h2 style="font-size:1.05rem;">Comments</h2>
+          <span id="commentCount" style="font-size:.78rem;color:var(--ink3);"></span>
+        </div>
+        <div id="commentFormWrap"></div>
+        <div id="commentsList" style="display:flex;flex-direction:column;gap:.65rem;margin-top:1rem;"></div>
+      </section>
+    `;
+    renderCommentForm();
+    await loadComments();
+  } catch (e) {
+    document.getElementById('notFound').style.display = 'block';
+  }
+});
+
+function renderCommentForm() {
+  const wrap = document.getElementById('commentFormWrap');
+  if (!wrap) return;
+  if (!currentPostUser) {
+    wrap.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.85rem;">
+      <p style="font-size:.84rem;color:var(--ink3);margin-bottom:.6rem;">Log in to leave a comment.</p>
+      <a href="login.html" class="btn btn-primary btn-sm">Log in</a>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="form-group">
+      <label for="newComment">Add a comment</label>
+      <textarea id="newComment" rows="3" placeholder="Write your comment..."></textarea>
+    </div>
+    <div class="form-error" id="commentError"></div>
+    <button class="btn btn-primary btn-sm" onclick="submitComment()">Post Comment</button>
+  `;
+}
+
+async function loadComments() {
+  const data = await api('api/comments.php?action=list&post_id=' + encodeURIComponent(currentPostId));
+  const comments = data.comments || [];
+  document.getElementById('commentCount').textContent =
+    comments.length + ' comment' + (comments.length === 1 ? '' : 's');
+  const list = document.getElementById('commentsList');
+  list.innerHTML = comments.length ? comments.map(c => {
+    const canEdit = currentPostUser && (Number(c.user_id) === Number(currentPostUser.id) || currentPostUser.role === 'admin');
+    return `
+      <article style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.85rem;">
+        <div style="display:flex;justify-content:space-between;gap:1rem;margin-bottom:.35rem;">
+          <strong style="font-size:.84rem;">${escapeHtml(c.author)}</strong>
+          <span style="font-size:.72rem;color:var(--ink3);">${escapeHtml(formatDate(c.created_at))}</span>
+        </div>
+        <p style="font-size:.86rem;color:var(--ink2);line-height:1.55;">${escapeHtml(c.body)}</p>
+        ${canEdit ? `<div style="display:flex;gap:.35rem;margin-top:.65rem;">
+          <button class="btn btn-ghost btn-sm" onclick="editComment(${c.id}, '${encodeURIComponent(c.body)}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteComment(${c.id})">Delete</button>
+        </div>` : ''}
+      </article>
+    `;
+  }).join('') : '<p style="color:var(--ink3);font-size:.84rem;">No comments yet.</p>';
+}
+
+async function submitComment() {
+  const textarea = document.getElementById('newComment');
+  const err = document.getElementById('commentError');
+  const body = textarea.value.trim();
+  try {
+    const form = new FormData();
+    form.append('post_id', currentPostId);
+    form.append('body', body);
+    await api('api/comments.php?action=create', { method: 'POST', body: form });
+    textarea.value = '';
+    err.classList.remove('visible');
+    showToast('Comment added.', 'success');
+    await loadComments();
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('visible');
+  }
+}
+
+async function editComment(id, encodedBody) {
+  const currentBody = decodeURIComponent(encodedBody);
+  const body = prompt('Edit your comment:', currentBody);
+  if (body === null) return;
+  try {
+    await api('api/comments.php', {
+      method: 'PUT',
+      body: new URLSearchParams({ id, body: body.trim() }),
+    });
+    showToast('Comment updated.', 'success');
+    await loadComments();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function deleteComment(id) {
+  if (!confirm('Delete this comment?')) return;
+  try {
+    await api('api/comments.php?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    showToast('Comment deleted.', 'error');
+    await loadComments();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+</script>
+</body>
+</html>

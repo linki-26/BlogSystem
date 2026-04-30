@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentBlog — Write. Share. Inspire.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── FOOTER DARK MODE FIX ── */
+body.dark-mode footer { background: #0a0a0a; }
+body.dark-mode .footer-copy { color: rgba(255,255,255,.75) !important; }
+body.dark-mode .footer-brand { color: #ffffff; }
+body.dark-mode footer nav a { color: rgba(255,255,255,.75) !important; }
+
+/* ── DOM PANEL REWRITE ── */
+.dom-panel {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 200;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  width: 215px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  overflow: hidden;
+}
+.dom-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .6rem .85rem;
+  cursor: pointer;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+.dom-panel-header h5 {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+.dom-panel-toggle {
+  font-size: .72rem;
+  color: var(--ink3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: .08rem .38rem;
+  line-height: 1.3;
+}
+.dom-panel-body { padding: .7rem .85rem .8rem; }
+.dom-panel-body.hidden { display: none; }
+
+.dom-row { margin-bottom: .52rem; }
+.dom-row:last-child { margin-bottom: 0; }
+.dom-row label {
+  font-size: .63rem;
+  font-weight: 700;
+  color: var(--ink3);
+  display: block;
+  margin-bottom: .2rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.dom-row .btns { display: flex; gap: .22rem; flex-wrap: wrap; }
+.dom-row .btns button {
+  padding: .2rem .44rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--ink2);
+  font-size: .7rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all .12s;
+}
+.dom-row .btns button:hover,
+.dom-row .btns button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.dom-range { display: flex; align-items: center; gap: .4rem; }
+.dom-range input[type=range] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+.dom-range span {
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  color: var(--accent);
+  min-width: 30px;
+  text-align: right;
+}
+
+/* ── COMMENTS ── */
+.comment-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem;
+  margin-bottom: .75rem;
+}
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  margin-bottom: .45rem;
+}
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.comment-name { font-size: .85rem; font-weight: 600; color: var(--ink); }
+.comment-meta { font-size: .71rem; color: var(--ink3); margin-top: .04rem; }
+.comment-body {
+  font-size: .84rem;
+  color: var(--ink2);
+  line-height: 1.6;
+  margin-left: calc(32px + .55rem);
+}
+.comment-on-post {
+  font-size: .73rem;
+  color: var(--ink3);
+  margin-top: .28rem;
+  margin-left: calc(32px + .55rem);
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<nav class="nav" id="mainNav">
+  <a class="nav-brand" href="index.html">StudentBlog</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="#posts-section">Posts</a></li>
+    <li><a href="#features-section">Features</a></li>
+    <li><a href="#gallery-section">Gallery</a></li>
+  </ul>
+  <div class="nav-spacer"></div>
+  <div class="nav-search">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="search" id="searchInput" placeholder="Search posts…" oninput="filterPosts()" aria-label="Search posts">
+  </div>
+  <div class="nav-actions" id="navActions"></div>
+  <button id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">☰</button>
+</nav>
+
+<main id="main">
+
+  <div class="hero-banner">
+    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1400&q=80"
+         alt="Students studying together"
+         onerror="this.style.background='#1c1c1a';this.style.height='300px';">
+    <div class="hero-banner-overlay">
+      <h1>Where students write &amp; inspire.</h1>
+      <p>A moderated publishing platform for university students.</p>
+      <div class="hero-actions">
+        <a href="login.html" class="btn btn-primary">Start Writing</a>
+        <a href="#posts-section" class="btn btn-ghost" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff;">Browse Posts ↓</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-stats-bar">
+    <div class="hero-stat-item"><div class="num" id="statPosts">6</div><div class="lbl">Published Posts</div></div>
+    <div class="hero-stat-item"><div class="num">3</div><div class="lbl">Active Users</div></div>
+    <div class="hero-stat-item"><div class="num">6</div><div class="lbl">Categories</div></div>
+    <div class="hero-stat-item"><div class="num">100%</div><div class="lbl">Moderated</div></div>
+  </div>
+
+  <div class="cat-strip" role="navigation" aria-label="Filter by category">
+    <button class="cat-pill active" data-cat="all" onclick="filterCat('all',this)">All Posts</button>
+    <button class="cat-pill" data-cat="Technology" onclick="filterCat('Technology',this)">Technology</button>
+    <button class="cat-pill" data-cat="Science" onclick="filterCat('Science',this)">Science</button>
+    <button class="cat-pill" data-cat="Arts" onclick="filterCat('Arts',this)">Arts</button>
+    <button class="cat-pill" data-cat="Engineering" onclick="filterCat('Engineering',this)">Engineering</button>
+    <button class="cat-pill" data-cat="Health" onclick="filterCat('Health',this)">Health</button>
+    <button class="cat-pill" data-cat="Mathematics" onclick="filterCat('Mathematics',this)">Mathematics</button>
+  </div>
+
+  <section id="posts-section" class="wrap" aria-label="Blog posts">
+    <h2 class="section-title">Latest <span class="accent">Posts</span></h2>
+    <div class="posts-grid" id="postsGrid"></div>
+    <div class="empty-state" id="noResults" style="display:none;">
+      <div class="icon">🔍</div>
+      <p>No posts found.</p>
+    </div>
+    <div id="guestCta" style="display:none;text-align:center;margin-top:1.5rem;padding:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);">
+      <p style="font-size:.95rem;font-weight:600;margin-bottom:.35rem;">Want to share your ideas?</p>
+      <p style="font-size:.83rem;color:var(--ink3);margin-bottom:.85rem;">Log in to submit posts and join the conversation.</p>
+      <a href="login.html" class="btn btn-primary">Log in / Register</a>
+    </div>
+  </section>
+
+  <section id="features-section" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 1.5rem;">
+    <div style="max-width:1100px;margin:0 auto;">
+      <h2 class="section-title">Why <span class="accent">StudentBlog?</span></h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon">📝</div>
+          <h4 style="font-size:.88rem;margin-bottom:.25rem;">Mandatory Moderation</h4>
+          <p style="font-size:.78rem;color:var(--ink3);">Every post is reviewed before going live. You get written feedback if rejected.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h4 style="font-size:.88rem;margin-bottom:.25rem;">Search &amp; Categories</h4>
+          <p style="font-size:.78rem;color:var(--ink3);">Browse posts by subject or search by keyword. All approved content is indexed.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h4 style="font-size:.88rem;margin-bottom:.25rem;">Status Tracking</h4>
+          <p style="font-size:.78rem;color:var(--ink3);">Your dashboard shows every post along with its current approval status.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h4 style="font-size:.88rem;margin-bottom:.25rem;">Role-Based Access</h4>
+          <p style="font-size:.78rem;color:var(--ink3);">Students, moderators, and admins each get a tailored dashboard.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h4 style="font-size:.88rem;margin-bottom:.25rem;">Peer Comments</h4>
+          <p style="font-size:.78rem;color:var(--ink3);">Registered students can comment on any approved post.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h4 style="font-size:.88rem;margin-bottom:.25rem;">Responsive Design</h4>
+          <p style="font-size:.78rem;color:var(--ink3);">Works on any device — desktop, tablet, or phone.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery-section" class="wrap">
+    <h2 class="section-title">Platform <span class="accent">Gallery</span></h2>
+    <div class="gallery-grid">
+      <div class="gallery-item" onclick="openLightbox(0)" tabindex="0" role="button" aria-label="Enlarge image">
+        <img src="images/login.png" alt="Login Page" onerror="this.parentElement.style.background='#1e3a5f'">
+        <div class="gallery-overlay">🔍</div>
+      </div>
+      <div class="gallery-item" onclick="openLightbox(1)" tabindex="0" role="button">
+        <img src="images/dashboard.png" alt="Dashboard" onerror="this.parentElement.style.background='#1a3a6b'">
+        <div class="gallery-overlay">🔍</div>
+      </div>
+      <div class="gallery-item" onclick="openLightbox(2)" tabindex="0" role="button">
+        <img src="images/admin.png" alt="AdminD" onerror="this.parentElement.style.background='#1a5a35'">
+        <div class="gallery-overlay">🔍</div>
+      </div>
+      <div class="gallery-item" onclick="openLightbox(3)" tabindex="0" role="button">
+        <img src="images/moderator.png" alt="ModeratorD" onerror="this.parentElement.style.background='#3a2a0d'">
+        <div class="gallery-overlay">🔍</div>
+      </div>
+      <div class="gallery-item" onclick="openLightbox(4)" tabindex="0" role="button">
+        <img src="images/student.png" alt="StudentD" onerror="this.parentElement.style.background='#3a1a5a'">
+        <div class="gallery-overlay">🔍</div>
+      </div>
+      <div class="gallery-item" onclick="openLightbox(5)" tabindex="0" role="button">
+        <img src="images/register.png" alt="Register" onerror="this.parentElement.style.background='#3a1a1a'">
+        <div class="gallery-overlay">🔍</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEOS — title changed, video descriptions removed -->
+  <section id="videos-section" class="wrap">
+    <h2 class="section-title">See It In <span class="accent">Action</span></h2>
+    <div class="video-grid">
+      <div class="video-card">
+        <div style="position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;">
+          <iframe class="video-embed" src="https://www.youtube.com/embed/cMVcclMkp7g" title="Student workflow demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>
+        </div>
+      </div>
+      <div class="video-card">
+        <div style="position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;">
+          <iframe class="video-embed" src="https://www.youtube.com/embed/cyzx45mupcQ" title="Moderator workflow demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMENTS — replaces "What Students Say"; only Liwin's comment, no avatar photo -->
+  <section class="wrap" id="comments-section">
+    <h2 class="section-title">Community <span class="accent">Comments</span></h2>
+    <div class="comment-card">
+      <div class="comment-header">
+        <div class="comment-avatar">LW</div>
+        <div>
+          <div class="comment-name">Liwin</div>
+          <div class="comment-meta">Computer Science, Year 2 &middot; Mar 12</div>
+        </div>
+      </div>
+      <p class="comment-body">"StudentBlog gave me the push I needed to start writing about my research. The moderation feedback was genuinely helpful — I rewrote my post on open source and learned a lot from the process!"</p>
+      <p class="comment-on-post">On <em>The future of machine learning in education</em></p>
+    </div>
+  </section>
+
+  <div class="wrap" style="text-align:center;padding-bottom:.5rem;">
+    <a href="#main" style="font-size:.78rem;color:var(--ink3);">↑ Back to top</a>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">StudentBlog</div>
+    <nav style="display:flex;gap:1rem;flex-wrap:wrap;">
+      <a href="#posts-section" class="footer-copy" style="color:rgba(255,255,255,.75);">Posts</a>
+      <a href="#features-section" class="footer-copy" style="color:rgba(255,255,255,.75);">Features</a>
+      <a href="login.html" class="footer-copy" style="color:rgba(255,255,255,.75);">Login</a>
+    </nav>
+    <p class="footer-copy" style="color:rgba(255,255,255,.75);">© 2026 Vytautas Magnus University</p>
+  </div>
+</footer>
+
+<!-- DOM CONTROLS PANEL — fixed minimize/show, full-page font size -->
+<div class="dom-panel" id="domPanel">
+  <div class="dom-panel-header" onclick="toggleDomPanel()">
+    <h5>🎛 Controls</h5>
+    <span class="dom-panel-toggle" id="domToggleBtn">▾</span>
+  </div>
+  <div class="dom-panel-body" id="domPanelBody">
+    <div class="dom-row">
+      <label>Theme</label>
+      <div class="btns">
+        <button id="themeLight" onclick="setTheme('light',this)" class="active">Light</button>
+        <button id="themeDark" onclick="setTheme('dark',this)">Dark</button>
+      </div>
+    </div>
+    <div class="dom-row">
+      <label>Accent Color</label>
+      <div class="btns" id="accentBtns">
+        <button onclick="setAccent('#2563eb','rgba(37,99,235,.08)',this)" style="background:#2563eb;color:#fff;border-color:#2563eb;" class="active">Blue</button>
+        <button onclick="setAccent('#16a34a','rgba(22,163,74,.08)',this)" style="background:#16a34a;color:#fff;border-color:#16a34a;">Green</button>
+        <button onclick="setAccent('#dc2626','rgba(220,38,38,.08)',this)" style="background:#dc2626;color:#fff;border-color:#dc2626;">Red</button>
+      </div>
+    </div>
+    <div class="dom-row">
+      <label>Font Size (whole page)</label>
+      <div class="dom-range">
+        <input type="range" min="12" max="22" value="15" step="1" id="fontSizeSlider" oninput="setFontSize(this.value)">
+        <span id="fontSizeVal">15px</span>
+      </div>
+    </div>
+    <div class="dom-row">
+      <label>Layout</label>
+      <div class="btns">
+        <button class="active" id="layoutGrid" onclick="setLayout('grid',this)">Grid</button>
+        <button id="layoutList" onclick="setLayout('list',this)">List</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="Enlarged gallery image">
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+<script>
+let currentCat = 'all';
+let currentSearch = '';
+let currentLayout = 'grid';
+let panelCollapsed = false;
+let posts = [];
+
+const catImages = {
+  Technology:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=70',
+  Science:'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&q=70',
+  Arts:'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=70',
+  Engineering:'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=400&q=70',
+  Health:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=70',
+  Mathematics:'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=70',
+  Education:'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=70',
+};
+
+const galleryImages = [
+  'images/login.png',
+  'images/dashboard.png',
+  'images/admin.png',
+  'images/moderator.png',
+  'images/student.png',
+  'images/register.png',
+];
+
+function postImage(p) {
+  return p.coverImageUrl || catImages[p.cat] || catImages.Education;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadPosts();
+  const user = await getSession();
+  if (!user) document.getElementById('guestCta').style.display = 'block';
+  const saved = localStorage.getItem('sb_theme');
+  if (saved === 'dark') {
+    document.getElementById('themeDark').classList.add('active');
+    document.getElementById('themeLight').classList.remove('active');
+  }
+});
+
+async function loadPosts() {
+  try {
+    const url = currentSearch.length >= 2
+      ? 'api/posts.php?action=search&q=' + encodeURIComponent(currentSearch)
+      : 'api/posts.php?action=list' + (currentCat !== 'all' ? '&cat=' + encodeURIComponent(currentCat) : '');
+    const data = await api(url);
+    posts = (data.posts || []).map(normalizePost);
+    renderPosts();
+  } catch (e) {
+    document.getElementById('postsGrid').innerHTML = '';
+    document.getElementById('noResults').style.display = 'block';
+    showToast(e.message, 'error');
+  }
+}
+
+async function renderPosts() {
+  const grid  = document.getElementById('postsGrid');
+  const noRes = document.getElementById('noResults');
+  const q = currentSearch.toLowerCase();
+  const filtered = posts.filter(p => {
+    const catOk = currentCat === 'all' || p.cat === currentCat;
+    const srcOk = !q || p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q);
+    return catOk && srcOk;
+  });
+  document.getElementById('statPosts').textContent = posts.length;
+  if (!filtered.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
+  noRes.style.display = 'none';
+  const user = await getSession();
+
+  if (currentLayout === 'grid') {
+    grid.style.cssText = '';
+    grid.innerHTML = filtered.map(p => `
+      <article class="post-card" onclick="${user ? "window.location.href='post.html?id=" + p.id + "'" : "window.location.href='login.html'"}">
+        <div class="post-card-thumb">
+          <img src="${postImage(p)}" alt="${p.cat} cover"
+               onerror="this.parentElement.style.background='#e5e5e5';this.style.display='none'">
+        </div>
+        <div class="post-card-body">
+          <span class="badge ${p.badgeClass}">${escapeHtml(p.cat)}</span>
+          <h3>${escapeHtml(p.title)}</h3>
+          <p>${escapeHtml(p.excerpt)}</p>
+          <div class="post-meta">
+            <span>${p.author} · ${p.date}</span>
+            <span class="read-btn">${user ? 'Read →' : 'Log in →'}</span>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  } else {
+    grid.style.cssText = 'display:flex;flex-direction:column;gap:.55rem;';
+    grid.innerHTML = filtered.map(p => `
+      <article onclick="${user ? "openPost(" + p.id + ")" : "window.location.href='login.html'"}"
+               style="display:flex;gap:.75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;"
+               onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+        <img src="${postImage(p)}" alt="${p.cat} cover"
+             style="width:85px;height:auto;object-fit:cover;flex-shrink:0;"
+             onerror="this.style.background='#e5e5e5';this.style.minHeight='65px';this.style.display='block'">
+        <div style="padding:.7rem .8rem .7rem 0;flex:1;">
+          <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem;">
+            <span class="badge ${p.badgeClass}">${escapeHtml(p.cat)}</span>
+            <span style="font-size:.72rem;color:var(--ink3);">${escapeHtml(p.date)}</span>
+          </div>
+          <h3 style="font-size:.86rem;margin-bottom:.18rem;">${p.title}</h3>
+          <p style="font-size:.76rem;color:var(--ink3);">${p.excerpt.slice(0,80)}…</p>
+        </div>
+      </article>
+    `).join('');
+  }
+}
+
+function openPost(id) {
+  const p = posts.find(p => p.id === id);
+  if (!p) return;
+  document.getElementById('postModalTitle').textContent   = p.title;
+  document.getElementById('postModalMeta').textContent    = p.author + ' · ' + p.cat + ' · ' + p.date;
+  document.getElementById('postModalExcerpt').textContent = p.excerpt;
+  document.getElementById('postModal').classList.add('open');
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  loadPosts();
+}
+function filterPosts() { currentSearch = document.getElementById('searchInput').value.trim(); loadPosts(); }
+
+/* ────────────────────────────────────────────
+   DOM PANEL CONTROLS
+   ──────────────────────────────────────────── */
+
+/** Toggle panel body visibility (minimise / expand) */
+function toggleDomPanel() {
+  panelCollapsed = !panelCollapsed;
+  document.getElementById('domPanelBody').classList.toggle('hidden', panelCollapsed);
+  document.getElementById('domToggleBtn').textContent = panelCollapsed ? '▴' : '▾';
+}
+
+/** Theme: light / dark */
+function setTheme(mode, btn) {
+  if (mode === 'dark') { document.body.classList.add('dark-mode'); }
+  else                 { document.body.classList.remove('dark-mode'); }
+  document.querySelectorAll('#themeLight,#themeDark').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  localStorage.setItem('sb_theme', mode);
+}
+
+/** Accent colour */
+function setAccent(hex, bg, btn) {
+  document.documentElement.style.setProperty('--accent',  hex);
+  document.documentElement.style.setProperty('--accent2', hex);
+  document.documentElement.style.setProperty('--accent-bg', bg);
+  document.getElementById('accentBtns').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/**
+ * Font size — applied to <html> so all rem/em values scale together.
+ * Range is 12–22 px, giving a clearly visible change across the whole page.
+ */
+function setFontSize(val) {
+  document.documentElement.style.fontSize = val + 'px';
+  document.getElementById('fontSizeVal').textContent = val + 'px';
+}
+
+/** Post grid layout */
+function setLayout(type, btn) {
+  currentLayout = type;
+  document.querySelectorAll('#layoutGrid,#layoutList').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPosts();
+}
+
+/* Gallery lightbox */
+function openLightbox(idx) {
+  document.getElementById('lightboxImg').src = galleryImages[idx];
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+</script>
+
+<!-- POST MODAL -->
+<div class="modal-overlay" id="postModal" onclick="if(event.target===this)closePostModal()">
+  <div class="modal" style="max-width:520px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.65rem;">
+      <h3 id="postModalTitle" style="font-size:1rem;"></h3>
+      <button onclick="closePostModal()" style="color:var(--ink3);">✕</button>
+    </div>
+    <p id="postModalMeta" style="font-size:.75rem;color:var(--ink3);margin-bottom:.75rem;"></p>
+    <p id="postModalExcerpt" style="font-size:.87rem;color:var(--ink2);line-height:1.6;"></p>
+    <p style="font-size:.76rem;color:var(--ink3);margin-top:.9rem;padding-top:.75rem;border-top:1px solid var(--border);">Full post content will be available once a backend is connected.</p>
+    <div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="closePostModal()">Close</button></div>
+  </div>
+</div>
+<script>function closePostModal(){ document.getElementById('postModal').classList.remove('open'); }</script>
+</body>
+</html>

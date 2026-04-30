@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentBlog — My Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+<nav class="nav" id="mainNav">
+  <a class="nav-brand" href="index.html">StudentBlog</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+  </ul>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions" id="navActions"></div>
+  <button id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">☰</button>
+</nav>
+
+<main id="main">
+<div class="dash-layout">
+  <aside class="dash-sidebar" aria-label="Dashboard navigation">
+    <div class="dash-profile">
+      <div class="avatar-lg" id="sidebarAvatar">LW</div>
+      <div class="profile-info">
+        <div class="name" id="sidebarName">Liwin</div>
+        <div class="role"><span class="badge badge-student">student</span></div>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <div class="section-label">Content</div>
+      <a href="#" id="nav-posts" class="active" onclick="switchTab('posts');return false;">📄 My Posts</a>
+      <a href="#" id="nav-newpost" onclick="switchTab('newpost');return false;">✏️ New Post</a>
+      <a href="#" id="nav-browse" onclick="switchTab('browse');return false;">🌐 Browse All</a>
+      <a href="#" id="nav-comments" onclick="switchTab('comments');return false;">💬 My Comments</a>
+      <div class="section-label">Account</div>
+      <a href="#" id="nav-settings" onclick="switchTab('settings');return false;">⚙️ Settings</a>
+      <a href="index.html" onclick="logout();return false;" style="margin-top:auto;color:var(--red);">🚪 Log out</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+
+    <!-- MY POSTS -->
+    <div id="tab-posts" class="tab-content active">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.1rem;">
+        <h2 class="section-title" style="margin-bottom:0;">My <span class="accent">Posts</span></h2>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('newpost')">+ New Post</button>
+      </div>
+      <div class="stat-grid" id="myStatGrid"></div>
+      <h3 style="font-size:.85rem;font-weight:600;margin-bottom:.55rem;color:var(--ink2);">Status Overview</h3>
+      <div id="myPostStatusList" style="margin-bottom:1.1rem;"></div>
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
+        <table class="data-table">
+          <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="myPostsBody"></tbody>
+        </table>
+      </div>
+      <div class="rejection-note" id="rejectionNoteBlock" style="display:none;"></div>
+    </div>
+
+    <!-- NEW POST -->
+    <div id="tab-newpost" class="tab-content">
+      <h2 class="section-title">Create <span class="accent">New Post</span></h2>
+      <div style="max-width:560px;">
+        <div class="form-group"><label for="npTitle">Post Title *</label><input type="text" id="npTitle" placeholder="What is your post about?"></div>
+        <div class="form-group">
+          <label for="npCat">Category *</label>
+          <select id="npCat">
+            <option value="">Select a category…</option>
+            <option>Technology</option><option>Science</option><option>Arts</option>
+            <option>Engineering</option><option>Health</option><option>Mathematics</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="npContent">Content *</label><textarea id="npContent" rows="8" placeholder="Write your post here… (minimum 10 words recommended)"></textarea></div>
+        <div class="form-group">
+          <label for="npCover">Cover Image</label>
+          <input type="file" id="npCover" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="uploadCoverImage(this.files[0])">
+          <input type="hidden" id="npCoverUrl">
+          <div class="upload-zone" onclick="document.getElementById('npCover').click()" style="cursor:pointer;">
+            <p style="margin-bottom:.1rem;font-weight:600;font-size:.82rem;">Click to upload cover image</p>
+            <small style="font-size:.72rem;">PNG, JPG up to 5 MB</small>
+          </div>
+          <div id="coverPreview" style="display:none;margin-top:.55rem;">
+            <img id="coverPreviewImg" src="" alt="Cover preview" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-lg);border:1px solid var(--border);">
+            <button class="btn btn-ghost btn-sm" style="margin-top:.4rem;" onclick="clearCoverImage()" type="button">Remove Image</button>
+          </div>
+        </div>
+        <p style="font-size:.77rem;color:var(--ink3);margin-bottom:.75rem;">Your post will go to the moderation queue and appear publicly once approved.</p>
+        <div class="form-error" id="npError"></div>
+        <button class="btn btn-primary" onclick="submitPost()">Submit for Review →</button>
+      </div>
+    </div>
+
+    <!-- BROWSE ALL -->
+    <div id="tab-browse" class="tab-content">
+      <h2 class="section-title">Browse <span class="accent">All Posts</span></h2>
+      <div class="posts-grid" id="browseGrid"></div>
+    </div>
+
+    <!-- COMMENTS -->
+    <div id="tab-comments" class="tab-content">
+      <h2 class="section-title">My <span class="accent">Comments</span></h2>
+      <p style="color:var(--ink3);margin-bottom:1rem;font-size:.84rem;">You have left 3 comments across 3 posts.</p>
+      <div style="display:flex;flex-direction:column;gap:.65rem;" id="commentsList"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="tab-content">
+      <h2 class="section-title">Account <span class="accent">Settings</span></h2>
+      <div style="max-width:400px;">
+        <div class="form-group"><label>Username</label><input type="text" id="settingsName"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="settingsEmail"></div>
+        <div class="form-group"><label>New Password</label><input type="password" placeholder="Leave blank to keep current"></div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <h3 style="font-size:.95rem;color:var(--red);margin-bottom:.35rem;">Delete Account</h3>
+          <p style="font-size:.78rem;color:var(--ink3);line-height:1.5;margin-bottom:.75rem;">This permanently removes your account, posts, and comments from the database.</p>
+          <div class="form-group"><label for="deletePassword">Current Password</label><input type="password" id="deletePassword" placeholder="Required for password accounts"></div>
+          <div class="form-group"><label for="deleteConfirm">Type DELETE to confirm</label><input type="text" id="deleteConfirm" autocomplete="off"></div>
+          <div class="form-error" id="deleteAccountError"></div>
+          <button class="btn btn-danger" onclick="deleteAccount()">Delete Account Permanently</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</main>
+
+<!-- POST VIEW MODAL -->
+<div class="modal-overlay" id="postViewModal" onclick="if(event.target===this)closePostView()">
+  <div class="modal" style="max-width:500px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.65rem;">
+      <h3 id="pvTitle" style="font-size:.98rem;"></h3>
+      <button onclick="closePostView()" style="color:var(--ink3);">✕</button>
+    </div>
+    <p id="pvMeta" style="font-size:.72rem;color:var(--ink3);margin-bottom:.7rem;"></p>
+    <p id="pvExcerpt" style="font-size:.85rem;color:var(--ink2);line-height:1.6;"></p>
+    <div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="closePostView()">Close</button></div>
+  </div>
+</div>
+
+<!-- EDIT POST MODAL -->
+<div class="modal-overlay" id="editMyPostModal">
+  <div class="modal" style="max-width:460px;">
+    <h3>Edit Post</h3>
+    <div class="form-group" style="margin-top:.65rem;">
+      <label for="editMyTitle">Title</label>
+      <input type="text" id="editMyTitle">
+    </div>
+    <div class="form-group">
+      <label for="editMyCat">Category</label>
+      <select id="editMyCat">
+        <option>Technology</option><option>Science</option><option>Arts</option>
+        <option>Engineering</option><option>Health</option><option>Mathematics</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="editMyContent">Content</label>
+      <textarea id="editMyContent" rows="4"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeMyModal('editMyPostModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveMyEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+<script src="cloudinary-config.js"></script>
+<script>
+const catImages = {
+  Technology:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=70',
+  Science:'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&q=70',
+  Arts:'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=70',
+  Engineering:'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=400&q=70',
+  Health:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=70',
+  Mathematics:'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=70',
+  Education:'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=70'
+};
+
+let currentUser = null;
+let myPosts = [];
+let allPosts = [];
+let myComments = [];
+let editMyPostId = null;
+
+function postImage(p) {
+  return p.coverImageUrl || catImages[p.cat] || catImages.Education;
+}
+
+function cloudinaryReady() {
+  const cfg = window.CLOUDINARY_CONFIG || {};
+  return cfg.cloudName && cfg.uploadPreset &&
+    cfg.cloudName !== 'YOUR_CLOUD_NAME' &&
+    cfg.uploadPreset !== 'YOUR_UNSIGNED_UPLOAD_PRESET';
+}
+
+async function uploadCoverImage(file) {
+  if (!file) return;
+  const err = document.getElementById('npError');
+  if (!cloudinaryReady()) {
+    err.textContent = 'Cloudinary is not configured. Update cloudinary-config.js first.';
+    err.classList.add('visible');
+    return;
+  }
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    err.textContent = 'Only JPG, PNG, and WebP images are allowed.';
+    err.classList.add('visible');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    err.textContent = 'Cover image must be 5 MB or smaller.';
+    err.classList.add('visible');
+    return;
+  }
+
+  try {
+    err.classList.remove('visible');
+    showToast('Uploading image...', 'success');
+    const cfg = window.CLOUDINARY_CONFIG;
+    const form = new FormData();
+    form.append('file', file);
+    form.append('upload_preset', cfg.uploadPreset);
+    form.append('folder', 'studentblog');
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cfg.cloudName)}/image/upload`, {
+      method: 'POST',
+      body: form,
+    });
+    const data = await response.json();
+    if (!response.ok || !data.secure_url) {
+      throw new Error(data.error?.message || 'Cloudinary upload failed.');
+    }
+    document.getElementById('npCoverUrl').value = data.secure_url;
+    document.getElementById('coverPreviewImg').src = data.secure_url;
+    document.getElementById('coverPreview').style.display = 'block';
+    showToast('Image uploaded.', 'success');
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('visible');
+  }
+}
+
+function clearCoverImage() {
+  document.getElementById('npCover').value = '';
+  document.getElementById('npCoverUrl').value = '';
+  document.getElementById('coverPreviewImg').src = '';
+  document.getElementById('coverPreview').style.display = 'none';
+}
+
+async function initStudentDashboard() {
+  currentUser = await requireAuth(['student']);
+  if (!currentUser) return;
+  const ini = currentUser.username.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('sidebarAvatar').textContent = ini;
+  document.getElementById('sidebarName').textContent   = currentUser.username;
+  document.getElementById('settingsName').value        = currentUser.username;
+  document.getElementById('settingsEmail').value       = currentUser.email;
+  await loadCategoriesIntoSelect('npCat');
+  await loadCategoriesIntoSelect('editMyCat', false);
+  await reloadStudentData();
+  await loadMyComments();
+}
+
+async function reloadStudentData() {
+  const mine = await api('api/posts.php?action=mine');
+  const approved = await api('api/posts.php?action=list');
+  myPosts = (mine.posts || []).map(normalizePost);
+  allPosts = (approved.posts || []).map(normalizePost);
+  renderMyPosts();
+  renderBrowse();
+}
+
+async function loadMyComments() {
+  const data = await api('api/comments.php?action=mine');
+  myComments = data.comments || [];
+  renderComments();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  const navEl = document.getElementById('nav-' + tab);
+  if (navEl) navEl.classList.add('active');
+  if (tab === 'browse')   renderBrowse();
+  if (tab === 'comments') renderComments();
+  if (tab === 'posts')    renderMyPosts();
+}
+
+function renderMyPosts() {
+  const total    = myPosts.length;
+  const approved = myPosts.filter(p => p.status === 'approved').length;
+  const pending  = myPosts.filter(p => p.status === 'pending').length;
+  const rejected = myPosts.filter(p => p.status === 'rejected').length;
+
+  document.getElementById('myStatGrid').innerHTML = `
+    <div class="stat-card total"><div class="stat-num">${total}</div><div class="stat-lbl">Total</div></div>
+    <div class="stat-card approved"><div class="stat-num">${approved}</div><div class="stat-lbl">Approved</div></div>
+    <div class="stat-card pending"><div class="stat-num">${pending}</div><div class="stat-lbl">Pending</div></div>
+    <div class="stat-card rejected"><div class="stat-num">${rejected}</div><div class="stat-lbl">Rejected</div></div>`;
+
+  const listEl = document.getElementById('myPostStatusList');
+  listEl.innerHTML = myPosts.length ? myPosts.map(p => `
+    <div class="status-banner ${p.status}">
+      <span>${p.status === 'approved' ? '✓' : p.status === 'pending' ? '⏳' : '✕'}</span>
+      <div>
+        <div class="title">${p.title}</div>
+        <div style="font-size:.74rem;margin-top:.08rem;">${p.cat} · ${p.date}${p.status === 'rejected' && p.rejectionNote ? ' — <em>' + p.rejectionNote + '</em>' : ''}</div>
+      </div>
+      <span class="badge badge-${p.status}" style="margin-left:auto;">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span>
+    </div>`).join('')
+  : '<p style="color:var(--ink3);font-size:.84rem;">No posts yet — create your first one!</p>';
+
+  document.getElementById('myPostsBody').innerHTML = myPosts.length ? myPosts.map(p => `
+    <tr>
+      <td>${p.title}</td>
+      <td><span class="badge ${getCatBadge(p.cat)}">${p.cat}</span></td>
+      <td><span class="badge badge-${p.status}">${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</span></td>
+      <td style="color:var(--ink3);">${p.date}</td>
+      <td><div style="display:flex;gap:.3rem;">
+        <button class="btn btn-ghost btn-sm" onclick="openEditMyPost(${p.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteMyPost(${p.id})">Delete</button>
+      </div></td>
+    </tr>`).join('')
+  : '<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:1.25rem;">No posts yet.</td></tr>';
+
+  const rp = myPosts.filter(p => p.status === 'rejected' && p.rejectionNote);
+  const nb = document.getElementById('rejectionNoteBlock');
+  if (rp.length) {
+    nb.style.display = 'block';
+    nb.innerHTML = rp.map(p => `<div style="margin-bottom:.35rem;"><strong style="color:var(--red);">Feedback for "${p.title}":</strong><br>${p.rejectionNote}</div>`).join('');
+  } else {
+    nb.style.display = 'none';
+  }
+}
+
+function openEditMyPost(id) {
+  const p = myPosts.find(p => p.id === id);
+  if (!p) return;
+  editMyPostId = id;
+  document.getElementById('editMyTitle').value   = p.title;
+  document.getElementById('editMyCat').value     = p.cat;
+  document.getElementById('editMyContent').value = p.excerpt;
+  document.getElementById('editMyPostModal').classList.add('open');
+}
+
+async function saveMyEdit() {
+  const p = myPosts.find(p => p.id === editMyPostId);
+  if (!p) return;
+  const title   = document.getElementById('editMyTitle').value.trim();
+  const cat     = document.getElementById('editMyCat').value;
+  const content = document.getElementById('editMyContent').value.trim();
+  if (!title || !cat || !content) { showToast('All fields required.', 'error'); return; }
+  try {
+    const body = new URLSearchParams({ id: editMyPostId, title, category: cat, content });
+    await api('api/posts.php', { method: 'PUT', body });
+    closeMyModal('editMyPostModal');
+    showToast('Post updated.', 'success');
+    await reloadStudentData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function deleteMyPost(id) {
+  if (!confirm('Delete this post?')) return;
+  try {
+    await api('api/posts.php?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    showToast('Post deleted.', 'error');
+    await reloadStudentData();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderBrowse() {
+  document.getElementById('browseGrid').innerHTML = allPosts.map(p => `
+    <article class="post-card" onclick="window.location.href='post.html?id=${p.id}'">
+      <div class="post-card-thumb">
+        <img src="${postImage(p)}" alt="${p.cat} cover"
+             onerror="this.parentElement.style.background='#e5e5e5';this.style.display='none'">
+      </div>
+      <div class="post-card-body">
+        <span class="badge ${p.badgeClass}">${p.cat}</span>
+        <h3>${p.title}</h3>
+        <p>${p.excerpt}</p>
+        <div class="post-meta"><span>${p.author} · ${p.date}</span><span class="read-btn">Read →</span></div>
+      </div>
+    </article>`).join('');
+}
+
+function openPostView(id) {
+  const p = allPosts.find(p => p.id === id);
+  if (!p) return;
+  document.getElementById('pvTitle').textContent   = p.title;
+  document.getElementById('pvMeta').textContent    = p.author + ' · ' + p.cat + ' · ' + p.date;
+  document.getElementById('pvExcerpt').textContent = p.excerpt;
+  document.getElementById('postViewModal').classList.add('open');
+}
+function closePostView() { document.getElementById('postViewModal').classList.remove('open'); }
+
+function renderComments() {
+  const comments = [
+    { text:'Great post on ML — the section about neural networks was really clear!', post:'The future of machine learning in education', date:'Mar 12' },
+    { text:'The CRISPR breakdown helped me understand the ethical side better.', post:'CRISPR gene editing: what students should know', date:'Mar 9' },
+    { text:'Calculus makes so much more sense explained this way!', post:'Why calculus is more intuitive than you think', date:'Mar 2' },
+  ];
+  document.getElementById('commentsList').innerHTML = comments.map((c, i) => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem .95rem;">
+      <p style="font-size:.84rem;margin-bottom:.25rem;">"${c.text}"</p>
+      <p style="font-size:.72rem;color:var(--ink3);">On <em>${c.post}</em> · ${c.date}</p>
+      <div style="display:flex;gap:.3rem;margin-top:.45rem;">
+        <button class="btn btn-ghost btn-sm" onclick="editComment(${i})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteComment(this)">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function editComment(idx) {
+  const newText = prompt('Edit your comment:');
+  if (newText && newText.trim()) showToast('Comment updated.', 'success');
+}
+
+function deleteComment(btn) {
+  if (!confirm('Delete this comment?')) return;
+  btn.closest('div[style]').remove();
+  showToast('Comment deleted.', 'error');
+}
+
+function renderComments() {
+  const note = document.querySelector('#tab-comments > p');
+  if (note) {
+    note.textContent = myComments.length
+      ? 'You have left ' + myComments.length + ' comment' + (myComments.length === 1 ? '' : 's') + '.'
+      : 'You have not written any comments yet.';
+  }
+
+  document.getElementById('commentsList').innerHTML = myComments.length ? myComments.map(c => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem .95rem;">
+      <p style="font-size:.84rem;margin-bottom:.25rem;">"${escapeHtml(c.body)}"</p>
+      <p style="font-size:.72rem;color:var(--ink3);">On <em>${escapeHtml(c.post_title)}</em> - ${escapeHtml(formatDate(c.created_at))}</p>
+      <div style="display:flex;gap:.3rem;margin-top:.45rem;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" onclick="editComment(${c.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteComment(${c.id})">Delete</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.location.href='post.html?id=${c.post_id}'">View Post</button>
+      </div>
+    </div>`).join('') : '<p style="color:var(--ink3);font-size:.84rem;">No comments yet. Open an approved post and add one.</p>';
+}
+
+async function editComment(id) {
+  const comment = myComments.find(c => Number(c.id) === Number(id));
+  if (!comment) return;
+  const newText = prompt('Edit your comment:', comment.body);
+  if (newText === null) return;
+  try {
+    await api('api/comments.php', {
+      method: 'PUT',
+      body: new URLSearchParams({ id, body: newText.trim() }),
+    });
+    showToast('Comment updated.', 'success');
+    await loadMyComments();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function deleteComment(id) {
+  if (!confirm('Delete this comment?')) return;
+  try {
+    await api('api/comments.php?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    showToast('Comment deleted.', 'error');
+    await loadMyComments();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function submitPost() {
+  const title   = document.getElementById('npTitle').value.trim();
+  const cat     = document.getElementById('npCat').value;
+  const content = document.getElementById('npContent').value.trim();
+  const err     = document.getElementById('npError');
+  if (!title || !cat || !content) { err.textContent = 'Please fill in all required fields.'; err.classList.add('visible'); return; }
+  if (content.split(/\s+/).length < 10) { err.textContent = 'Content is too short. Please write more.'; err.classList.add('visible'); return; }
+  try {
+    const form = new FormData();
+    form.append('title', title);
+    form.append('category', cat);
+    form.append('content', content);
+    form.append('cover_image_url', document.getElementById('npCoverUrl').value);
+    await api('api/posts.php?action=create', { method: 'POST', body: form });
+    err.classList.remove('visible');
+    document.getElementById('npTitle').value = '';
+    document.getElementById('npCat').value = '';
+    document.getElementById('npContent').value = '';
+    clearCoverImage();
+    showToast('Post submitted for review!', 'success');
+    await reloadStudentData();
+    switchTab('posts');
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('visible');
+  }
+  return;
+  err.classList.remove('visible');
+  const newPost = { id: Date.now(), title, author: currentUser.username, authorId: currentUser.id, date: 'Today', cat, badgeClass: getCatBadge(cat), excerpt: content.slice(0, 160), color: 'linear-gradient(135deg,#1a2a3a 0%,#0d1a2a 100%)', icon: '📝', status: 'pending' };
+  myPosts.push(newPost);
+  document.getElementById('npTitle').value = '';
+  document.getElementById('npCat').value = '';
+  document.getElementById('npContent').value = '';
+  showToast('Post submitted for review!', 'success');
+  switchTab('posts');
+}
+
+async function saveSettings() {
+  const name  = document.getElementById('settingsName').value.trim();
+  const email = document.getElementById('settingsEmail').value.trim();
+  if (!name || !email) { showToast('Name and email are required.', 'error'); return; }
+  try {
+    const form = new FormData();
+    form.append('action', 'profile');
+    form.append('username', name);
+    form.append('email', email);
+    form.append('password', document.querySelector('#tab-settings input[type="password"]').value);
+    const data = await api('api/auth.php', { method: 'POST', body: form });
+    currentUser = data.user;
+    _sessionCache = data.user;
+    document.getElementById('sidebarName').textContent = data.user.username;
+    showToast('Settings saved!', 'success');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+  return;
+  showToast('Settings saved!', 'success');
+}
+
+async function deleteAccount() {
+  const confirmText = document.getElementById('deleteConfirm').value.trim();
+  const password = document.getElementById('deletePassword').value;
+  const err = document.getElementById('deleteAccountError');
+
+  if (confirmText !== 'DELETE') {
+    err.textContent = 'Type DELETE to confirm permanent account deletion.';
+    err.classList.add('visible');
+    return;
+  }
+  if (!confirm('This will permanently delete your account, posts, and comments. Continue?')) {
+    return;
+  }
+
+  try {
+    const form = new FormData();
+    form.append('action', 'delete_account');
+    form.append('confirm', confirmText);
+    form.append('password', password);
+    await api('api/auth.php', { method: 'POST', body: form });
+    _sessionCache = null;
+    err.classList.remove('visible');
+    showToast('Account deleted.', 'success');
+    setTimeout(() => window.location.href = 'index.html', 700);
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('visible');
+  }
+}
+
+function closeMyModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.addEventListener('DOMContentLoaded', initStudentDashboard);
+</script>
+</body>
+</html>

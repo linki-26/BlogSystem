@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudentBlog — Moderator Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<nav class="nav" id="mainNav">
+  <a class="nav-brand" href="index.html">StudentBlog</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+  </ul>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions" id="navActions"></div>
+  <button id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">☰</button>
+</nav>
+
+<main id="main">
+<div class="dash-layout">
+
+  <aside class="dash-sidebar" aria-label="Moderator navigation">
+    <div class="dash-profile">
+      <div class="avatar-lg" style="background:var(--green);" id="sidebarAvatar">M</div>
+      <div class="profile-info">
+        <div class="name" id="sidebarName">Moderator</div>
+        <div class="role"><span class="badge badge-moderator">moderator</span></div>
+      </div>
+    </div>
+    <nav class="dash-nav">
+      <div class="section-label">Moderation</div>
+      <a href="#" id="nav-queue" class="active" onclick="switchTab('queue');return false;">🕐 Pending Queue <span id="queueCount" style="margin-left:auto;background:var(--amber-bg);color:var(--amber);font-size:.6rem;padding:.05rem .3rem;border-radius:4px;"></span></a>
+      <a href="#" id="nav-history" onclick="switchTab('history');return false;">📋 Review History</a>
+      <div class="section-label">Info</div>
+      <a href="#" id="nav-stats" onclick="switchTab('stats');return false;">📊 My Stats</a>
+      <a href="index.html" onclick="logout();return false;" style="margin-top:auto;color:var(--red);">🚪 Log out</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+
+    <!-- PENDING QUEUE -->
+    <div id="tab-queue" class="tab-content active">
+      <h2 class="section-title">Pending <span class="accent">Queue</span></h2>
+      <div class="stat-grid" style="margin-bottom:1rem;">
+        <div class="stat-card pending"><div class="stat-num" id="pendingCount">2</div><div class="stat-lbl">Awaiting Review</div></div>
+        <div class="stat-card approved"><div class="stat-num" id="approvedToday">0</div><div class="stat-lbl">Approved Today</div></div>
+        <div class="stat-card rejected"><div class="stat-num" id="rejectedToday">0</div><div class="stat-lbl">Rejected Today</div></div>
+      </div>
+      <p style="color:var(--ink3);font-size:.82rem;margin-bottom:.9rem;" id="queueSubtitle"></p>
+      <div id="modQueue"></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="tab-history" class="tab-content">
+      <h2 class="section-title">Review <span class="accent">History</span></h2>
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
+        <table class="data-table">
+          <thead><tr><th>Post Title</th><th>Author</th><th>Category</th><th>Decision</th><th>Date</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div id="tab-stats" class="tab-content">
+      <h2 class="section-title">My <span class="accent">Stats</span></h2>
+      <div class="stat-grid">
+        <div class="stat-card total"><div class="stat-num" id="statTotal">8</div><div class="stat-lbl">Total Reviewed</div></div>
+        <div class="stat-card approved"><div class="stat-num" id="statApproved">6</div><div class="stat-lbl">Approved</div></div>
+        <div class="stat-card rejected"><div class="stat-num" id="statRejected">2</div><div class="stat-lbl">Rejected</div></div>
+        <div class="stat-card pending"><div class="stat-num" id="statPending">2</div><div class="stat-lbl">In Queue</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem;margin-top:.55rem;">
+        <p style="font-size:.82rem;color:var(--ink3);">As a <strong style="color:var(--green);">Moderator</strong> you can review pending posts. User management and category administration require Admin access.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</main>
+
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <h3>Reject Post</h3>
+    <p class="sub">Provide a reason so the student knows what to improve.</p>
+    <div class="form-group">
+      <label for="rejectReason">Rejection reason *</label>
+      <textarea id="rejectReason" rows="4" placeholder="e.g., Post is too short and lacks references…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('rejectModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmReject()">Send Rejection</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+<script>
+let currentUser = null;
+let queuePosts = [];
+let rejectTargetId = null;
+let approvedToday  = 0;
+let rejectedToday  = 0;
+const historyLog   = [];
+
+async function initModeratorDashboard() {
+  currentUser = await requireAuth(['moderator', 'admin']);
+  if (!currentUser) return;
+  const initials = currentUser.username.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('sidebarAvatar').textContent = initials;
+  document.getElementById('sidebarName').textContent   = currentUser.username;
+  await reloadQueue();
+}
+
+async function reloadQueue() {
+  const data = await api('api/posts.php?action=queue');
+  queuePosts = (data.posts || []).map(p => ({ ...normalizePost(p), status: 'pending' }));
+  renderQueue();
+  renderHistory();
+  updateStats();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  const navEl = document.getElementById('nav-' + tab);
+  if (navEl) navEl.classList.add('active');
+  if (tab === 'history') renderHistory();
+  if (tab === 'stats')   updateStats();
+}
+
+function updateStats() {
+  const inQueue = queuePosts.filter(p => p.status === 'pending').length;
+  document.getElementById('statPending').textContent  = inQueue;
+  document.getElementById('statApproved').textContent = 6 + approvedToday;
+  document.getElementById('statRejected').textContent = 2 + rejectedToday;
+  document.getElementById('statTotal').textContent    = 8 + approvedToday + rejectedToday;
+}
+
+function renderQueue() {
+  const count = queuePosts.filter(p => p.status === 'pending').length;
+  document.getElementById('pendingCount').textContent  = count;
+  document.getElementById('approvedToday').textContent = approvedToday;
+  document.getElementById('rejectedToday').textContent = rejectedToday;
+  document.getElementById('queueCount').textContent    = count || '';
+  document.getElementById('queueSubtitle').textContent = count
+    ? count + ' post' + (count > 1 ? 's' : '') + ' awaiting your review.'
+    : 'Queue is empty — all posts reviewed!';
+
+  const container = document.getElementById('modQueue');
+  const pending = queuePosts.filter(p => p.status === 'pending');
+  if (!pending.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>No posts awaiting review.</p></div>';
+    return;
+  }
+  container.innerHTML = pending.map(p => `
+    <article style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:.65rem;" id="mc-${p.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem;">
+        <div>
+          <h3 style="font-size:.92rem;">${p.title}</h3>
+          <p style="font-size:.74rem;color:var(--ink3);margin-top:.1rem;">By <strong>${p.author}</strong> · ${p.cat} · ${p.date}</p>
+        </div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <p style="font-size:.82rem;color:var(--ink2);margin-bottom:.65rem;">${p.excerpt}</p>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="btn btn-success btn-sm" onclick="approvePost(${p.id})">✓ Approve</button>
+        <button class="btn btn-danger btn-sm" onclick="openRejectModal(${p.id})">✕ Reject</button>
+      </div>
+    </article>
+  `).join('');
+}
+
+async function approvePost(id) {
+  const post = queuePosts.find(p => p.id === id);
+  if (!post) return;
+  try {
+    const form = new FormData();
+    form.append('id', id);
+    await api('api/posts.php?action=approve', { method: 'POST', body: form });
+    approvedToday++;
+    historyLog.push({ title: post.title, author: post.author, cat: post.cat, decision: 'approved', date: 'Today' });
+    showToast('Post approved and published!', 'success');
+    await reloadQueue();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function openRejectModal(id) {
+  rejectTargetId = id;
+  document.getElementById('rejectReason').value = '';
+  document.getElementById('rejectModal').classList.add('open');
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('rejectReason').value.trim();
+  if (!reason) { showToast('Please provide a rejection reason.', 'error'); return; }
+  const post = queuePosts.find(p => p.id === rejectTargetId);
+  if (!post) return;
+  try {
+    const form = new FormData();
+    form.append('id', rejectTargetId);
+    form.append('rejection_note', reason);
+    await api('api/posts.php?action=reject', { method: 'POST', body: form });
+    rejectedToday++;
+    historyLog.push({ title: post.title, author: post.author, cat: post.cat, decision: 'rejected', date: 'Today' });
+    closeModal('rejectModal');
+    showToast('Post rejected. Feedback sent.', 'error');
+    await reloadQueue();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderHistory() {
+  const past = [
+    { title:'The future of machine learning in education', author:'Liwin', cat:'Technology', decision:'approved', date:'Mar 10' },
+    { title:'CRISPR gene editing: what students should know', author:'Liwin', cat:'Science', decision:'approved', date:'Mar 8' },
+    { title:'My experience with open source', author:'Liwin', cat:'Technology', decision:'rejected', date:'Mar 8' },
+    ...historyLog
+  ];
+  document.getElementById('historyBody').innerHTML = past.map(h => `
+    <tr>
+      <td>${h.title}</td>
+      <td style="color:var(--ink3);">${h.author}</td>
+      <td><span class="badge ${getCatBadge(h.cat)}">${h.cat}</span></td>
+      <td><span class="badge badge-${h.decision}">${h.decision.charAt(0).toUpperCase() + h.decision.slice(1)}</span></td>
+      <td style="color:var(--ink3);">${h.date}</td>
+    </tr>
+  `).join('');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.addEventListener('DOMContentLoaded', initModeratorDashboard);
+</script>
+</body>
+</html>
