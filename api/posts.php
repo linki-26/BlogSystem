@@ -6,6 +6,7 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once 'session_guard.php';
 require_once 'db.php';
 require_once 'email_service.php';
 

@@ -6,6 +6,7 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once 'session_guard.php';
 require_once 'db.php';
 require_once 'google_config.php';
 require_once 'email_service.php';
@@ -134,9 +135,11 @@ function handleLogin(): void {
 
     // Save safe user data in the PHP session
     // Never put the password hash in the session
+    session_regenerate_id(true);
     $_SESSION['user'] = sessionPayload($user);
+    markSessionActive();
 
-    respond(200, ['user' => $_SESSION['user']]);
+    respond(200, ['user' => $_SESSION['user'], 'session' => sessionInfo()]);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -200,6 +203,7 @@ function handleRegister(): void {
     $newId = (int) $pdo->lastInsertId();
 
     // Log the new user in automatically after registration
+    session_regenerate_id(true);
     $_SESSION['user'] = [
         'id'       => $newId,
         'username' => $username,
@@ -207,6 +211,7 @@ function handleRegister(): void {
         'role'     => 'student',
         'active'   => true,
     ];
+    markSessionActive();
 
     sendEmail(
         $email,
@@ -215,7 +220,7 @@ function handleRegister(): void {
         '<p>Hi ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . ',</p><p>Your StudentBlog account has been created. You can now write posts, comment, and track moderation feedback.</p><p>StudentBlog</p>'
     );
 
-    respond(201, ['user' => $_SESSION['user']]);
+    respond(201, ['user' => $_SESSION['user'], 'session' => sessionInfo()]);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -287,8 +292,10 @@ function handleGoogleLogin(): void {
         );
     }
 
+    session_regenerate_id(true);
     $_SESSION['user'] = sessionPayload($user);
-    respond(200, ['user' => $_SESSION['user']]);
+    markSessionActive();
+    respond(200, ['user' => $_SESSION['user'], 'session' => sessionInfo()]);
 }
 
 function handleLogout(): void {
@@ -302,7 +309,9 @@ function handleLogout(): void {
 // ─────────────────────────────────────────────────────────────
 function handleMe(): void {
     if (isset($_SESSION['user'])) {
-        respond(200, ['user' => $_SESSION['user']]);
+        respond(200, ['user' => $_SESSION['user'], 'session' => sessionInfo()]);
+    } elseif (wasSessionExpired()) {
+        respond(401, ['user' => null, 'expired' => true, 'error' => 'Your session expired. Please log in again.']);
     } else {
         respond(200, ['user' => null]); // not logged in, but not an error
     }

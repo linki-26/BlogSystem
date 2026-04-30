@@ -5,6 +5,7 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once 'session_guard.php';
 require_once 'db.php';
 
 function respond(int $c, array $d): void {

@@ -238,6 +238,7 @@ The project includes the following security measures:
 
 - Passwords are stored using hashing.
 - PHP sessions are used for login state.
+- Logged-in sessions expire automatically after 30 minutes of inactivity.
 - PDO prepared statements are used for database queries.
 - User input is validated before being saved.
 - Incorrect or missing form data returns error messages.

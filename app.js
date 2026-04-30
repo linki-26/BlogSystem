@@ -7,13 +7,24 @@
 // so we don't make multiple requests to auth.php on one page
 // ─────────────────────────────────────────────────────────────
 let _sessionCache = undefined; // undefined = not yet fetched, null = not logged in
+let _sessionTimeoutSeconds = 1800;
+let _sessionWarningTimer = null;
+let _sessionExpiryTimer = null;
+let _sessionCountdownTimer = null;
+let _sessionWarningOpen = false;
 
 async function getSession() {
     if (_sessionCache !== undefined) return _sessionCache;
     try {
         const res  = await fetch('api/auth.php?action=me');
         const data = await res.json();
+        if (data.expired) {
+            sessionStorage.setItem('sessionExpired', '1');
+        }
         _sessionCache = data.user || null;
+        if (_sessionCache && data.session) {
+            scheduleSessionWarning(data.session);
+        }
     } catch {
         _sessionCache = null;
     }
@@ -35,6 +46,12 @@ async function api(url, options = {}) {
             const messages = data.errors || (data.error ? [data.error] : ['Server error']);
             throw new Error(messages.join('\n'));
         }
+        if (data.user) {
+            _sessionCache = data.user;
+        }
+        if (_sessionCache) {
+            scheduleSessionWarning(data.session);
+        }
         return data;
     } catch (err) {
         // Re-throw so callers can catch and show in the UI
@@ -51,6 +68,10 @@ async function api(url, options = {}) {
 async function requireAuth(roles) {
     const u = await getSession();
     if (!u) {
+        if (sessionStorage.getItem('sessionExpired') === '1') {
+            sessionStorage.removeItem('sessionExpired');
+            alert('Your session expired. Please log in again.');
+        }
         window.location.href = 'login.html';
         return null;
     }
@@ -74,9 +95,109 @@ function redirectByRole(role) {
 }
 
 async function logout() {
+    clearSessionTimers();
     await fetch('api/auth.php?action=logout', { method: 'POST' });
     _sessionCache = null;
     window.location.href = 'index.html';
+}
+
+function scheduleSessionWarning(session = null) {
+    if (!_sessionCache) return;
+
+    if (session?.timeoutSeconds) {
+        _sessionTimeoutSeconds = Number(session.timeoutSeconds);
+    }
+
+    const remaining = Number(session?.remainingSeconds || _sessionTimeoutSeconds);
+    const warningBefore = Math.min(60, Math.max(10, Math.floor(_sessionTimeoutSeconds / 2)));
+    const warningDelay = Math.max(0, (remaining - warningBefore) * 1000);
+    const expiryDelay = Math.max(1000, remaining * 1000);
+
+    clearSessionTimers();
+    _sessionWarningTimer = setTimeout(() => showSessionExpiryModal(warningBefore), warningDelay);
+    _sessionExpiryTimer = setTimeout(() => handleClientSessionExpired(), expiryDelay + 1000);
+}
+
+function clearSessionTimers() {
+    clearTimeout(_sessionWarningTimer);
+    clearTimeout(_sessionExpiryTimer);
+    clearInterval(_sessionCountdownTimer);
+    _sessionWarningTimer = null;
+    _sessionExpiryTimer = null;
+    _sessionCountdownTimer = null;
+}
+
+function ensureSessionExpiryModal() {
+    let modal = document.getElementById('sessionExpiryModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'sessionExpiryModal';
+    modal.className = 'modal-overlay';
+    modal.style.zIndex = '9500';
+    modal.innerHTML = `
+        <div class="modal">
+            <h3>Session expiring soon</h3>
+            <p class="sub">You will be logged out in <strong id="sessionCountdown">60</strong> seconds because of inactivity.</p>
+            <div class="modal-actions">
+                <button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>
+                <button class="btn btn-primary btn-sm" onclick="extendSession()">Stay logged in</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function showSessionExpiryModal(secondsLeft) {
+    if (!_sessionCache || _sessionWarningOpen) return;
+
+    _sessionWarningOpen = true;
+    let remaining = Math.max(1, Number(secondsLeft) || 60);
+    const modal = ensureSessionExpiryModal();
+    const countdown = modal.querySelector('#sessionCountdown');
+
+    const render = () => {
+        countdown.textContent = String(Math.max(0, remaining));
+    };
+
+    render();
+    modal.classList.add('open');
+    clearInterval(_sessionCountdownTimer);
+    _sessionCountdownTimer = setInterval(() => {
+        remaining -= 1;
+        render();
+        if (remaining <= 0) {
+            clearInterval(_sessionCountdownTimer);
+        }
+    }, 1000);
+}
+
+async function extendSession() {
+    try {
+        const res = await fetch('api/auth.php?action=me');
+        const data = await res.json();
+
+        if (!res.ok || !data.user) {
+            handleClientSessionExpired();
+            return;
+        }
+
+        _sessionCache = data.user;
+        _sessionWarningOpen = false;
+        document.getElementById('sessionExpiryModal')?.classList.remove('open');
+        showToast('Session extended.', 'success');
+        scheduleSessionWarning(data.session);
+    } catch {
+        handleClientSessionExpired();
+    }
+}
+
+function handleClientSessionExpired() {
+    clearSessionTimers();
+    _sessionCache = null;
+    sessionStorage.setItem('sessionExpired', '1');
+    document.getElementById('sessionExpiryModal')?.classList.remove('open');
+    window.location.href = 'login.html';
 }
 
 // ─────────────────────────────────────────────────────────────
